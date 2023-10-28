@@ -5,16 +5,29 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 using namespace std;
 
-// A function to read the ciphertext from a file
+
+/*This function reads the file that contains the cipher text 
+puts the file into a string and returns a string*/
 string read_ciphertext(string filename) {
-    ifstream fin(filename);
+
+  //variable that takes in the file 
+    ifstream fin(filename); 
+  
+//statement that checks if it exist, if not it will return a message 
     if (!fin) {
         cout << "Error: cannot open file " << filename << endl;
         exit(1);
     }
+  
+/* The string variable ciphertext takes in two parameters,
+one that reads the file all the way to the end and the other 
+that returns it to the variable*/
     string ciphertext((istreambuf_iterator<char>(fin)), (istreambuf_iterator<char>()));
+  
+  //closes file
     fin.close();
     return ciphertext;
 }
@@ -23,72 +36,126 @@ string encryptedText(string filename){
   ifstream file(filename); //taking file as inputstream
    string str;
    if(file) {
+
+     //reading file and storing it in string variable
       ostringstream x;
-      x << file.rdbuf(); // reading data
+
+     //reading file and storing it in string variable
+      x << file.rdbuf(); 
+
+     //storing the string in str
       str = x.str();
    }
 
   return str;
 }
 
-// ... (the rest of the code remains the same)
-// A function to calculate and display the frequency of letters in the ciphertext
+/* A funtion takes a string (has the ciphertext) then collects, 
+calculates and displays the frequency of each letter in the 
+cipher text using the map data structure */
 map<char, int> get_frequency(string ciphertext) {
-    map<char, int> freq;
+
+  //map takes in a char and int variable
+    map<char, int> frequency;
+    int count = 0;
+  
+  /*Advanced for loop that looks through the cipher text and 
+  counts the frequency of each letter*/
     for (char c : ciphertext) {
+      
+      // counts how many characters in the file 
+      count++;
         if (isalpha(c)) {
             c = toupper(c);
-            freq[c]++;
+            frequency[c]++;
         }
     }
+    
     cout << "\n\nFrequency of letters in the ciphertext:\n" << endl;
-    for (auto p : freq) {
-        cout << p.first << ": " << p.second << endl;
+
+  /*Advanced for loop that displays the frequency of a 
+  character and how many it occurs and its percentage*/
+    for (auto p : frequency) {
+      double percentage = (double)p.second / count * 100;
+        cout << p.first << ": " << p.second << " ["<< round(percentage) <<"%]"<<endl;
     }
-    return freq;
+    return frequency;
 }
 
-// A function to sort the letters by frequency in descending order
+/* A vector function that takes a map variable containing a character 
+and an int to sort the letters by frequency in descending order*/
 vector<char> sort_by_frequency(map<char, int> freq) {
-    vector<pair<int, char> > pairs;
+
+  // A vector that contains a pair that takes an int and char
+    vector<pair<int, char>> pairs;
+
+  //An advanced for loop that add the pairs at the end of the vector
     for (auto p : freq) {
         pairs.push_back({p.second, p.first});
     }
+
+//sort function arranging the pairs vector from begining to end  
     sort(pairs.rbegin(), pairs.rend());
+
+  //a vector that takes in characters 
     vector<char> sorted_letters;
+  
+/*An advanced for loop that takes in pairs and puts them into 
+  the vector sorted_letters by int*/
     for (auto p : pairs) {
         sorted_letters.push_back(p.second);
     }
     return sorted_letters;
 }
 
-// A function to make a guess and update the mapping
+/* A void function that allows the user to guess and 
+replace a letter in the encrypted text*/
 void make_guess(map<char, char>& mapping) {
     char letter, replacement;
-    cout << "\nEnter your guess in the format 'letter = replacement': ";
+    cout << "\nEnter your guess in the format 'letter = replacement': \n";
+    cout<< "\nIf you want to exit please enter '! = !' \n ";
     cin >> letter >> replacement >> replacement;
-    letter = toupper(letter);
+  
+  //makes letter & replacement uppercase after user input 
+    letter = toupper(letter); 
     replacement = toupper(replacement);
+
+  //if statement that checks if the user input is valid and replaces the letter in the map
     if (isalpha(letter) && isalpha(replacement)) {
         mapping[letter] = replacement;
         cout << "\n Updated mapping: " << letter << " -> " << replacement << endl<<endl;
 
     }
+      else if(letter == '!'){
+        cout<<"Exiting program...\n";
+        cout<< "GoodBye!\n";
+        exit(1);
+        
+      }
+      // if user input is invalid it waill prompt user to try again
     else {
         cout << "Invalid input. Try again." << endl;
     }
 }
 
-// A function to decrypt the ciphertext using the mapping
+/*A string function that takes a map variable(that takes in two 
+character variable) and a string variable*/
 string decrypt(string ciphertext, map<char, char> mapping) {
     string plaintext = ciphertext;
     for (int i = 0; i < plaintext.length(); i++) {
         char c = plaintext[i];
+
+      //if statement that checks if the character is a letter
         if (isalpha(c)) {
             c = toupper(c);
+
+          //if statement that checks if the character is in the map
             if (mapping.count(c)) {
+
+              //plaintext turns into mapping 
                 plaintext[i] = mapping[c];
             }
+              //if it is not in the map it will replace the character with a '*'
             else {
                 plaintext[i] = '*';
             }
@@ -104,20 +171,36 @@ void display_plaintext(string plaintext) {
 }
 
 int main() {
+  
   string filename;
+  
   cout << "Welcome to the Decryptor!!\n"<<endl;
-  cout<< "Which please input file"<<endl;
+  cout<< "Please select an input file:"<<endl;
+  cout<< "ciphertext.txt"<<endl;
+  cout<< "ciphertext2.txt\n"<<endl;
+  
   cin >> filename;
+  
+  //while loop just in case user inputs a file that doesnt exist
+  while(filename != "ciphertext.txt" && filename != "ciphertext2.txt"){
+      cout<<"File not found, try again"<<endl;
+      cin >> filename;
+  }
   if(filename == "ciphertext.txt"||filename == "ciphertext2.txt"){
 
-    // Read the ciphertext from a file
+    //string ciphertext becomes the file that the user input 
     string ciphertext = read_ciphertext(filename);
 
-    // Calculate and display the frequency of letters in the ciphertext
-    map<char, int> freq = get_frequency(ciphertext);
 
-    // Sort the letters by frequency in descending order
-    vector<char> sorted_letters = sort_by_frequency(freq);
+    /*map variable the takes character(key) and int(value) and 
+    passes it into the get_frequency function which takes 
+    the string ciphertext */
+    map<char, int> frequency = get_frequency(ciphertext);
+
+
+    /* vector variable that takes in characters and passes it into 
+    the sort_by_frequency function which takes in the map frequency*/
+    vector<char> sorted_letters = sort_by_frequency(frequency);
 
     // Initialize the mapping with some initial guesses
     map<char, char> mapping;
@@ -135,9 +218,9 @@ int main() {
      string plaintext = decrypt(ciphertext, mapping);
      
      // Displays encrypted text
-    cout<< encryptedText(filename)<<endl;
+    cout<<endl<< encryptedText(filename)<<endl;
   
-     // Display the decrypted plaintext
+     // Display the decrypted plaintext with "*" in its place 
      display_plaintext(plaintext);
   
      // Make guesses and update the mapping interactively
@@ -150,11 +233,9 @@ int main() {
          display_plaintext(plaintext);
     
 
-  }}
-  else{
-    cout<<"File not found, try again"<<endl;
-    cin >> filename;
   }
+  }
+
 
      return 0;
 }
